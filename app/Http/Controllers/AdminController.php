@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Place;
 use App\Models\Reservation;
+use App\Models\Setting;
 use App\Models\User;
 use App\Models\WaitingList;
 use Illuminate\Http\Request;
@@ -109,6 +110,41 @@ class AdminController extends Controller
     }
 
     /**
+     * Supprime un utilisateur
+     */
+    public function deleteUser(User $user)
+    {
+        // Vérifier si l'utilisateur a une place attribuée
+        $place = Place::where('user_id', $user->id)->first();
+        if ($place) {
+            // Libérer la place
+            $place->update([
+                'statut' => 'disponible',
+                'user_id' => null
+            ]);
+        }
+
+        // Vérifier si l'utilisateur a des réservations actives
+        $activeReservations = Reservation::where('user_id', $user->id)
+            ->where('statut', 'active')
+            ->get();
+            
+        // Annuler les réservations actives
+        foreach ($activeReservations as $reservation) {
+            $reservation->update(['statut' => 'annulée']);
+        }
+
+        // Supprimer l'utilisateur de la liste d'attente s'il y est
+        WaitingList::where('user_id', $user->id)->delete();
+
+        // Supprimer l'utilisateur
+        $user->delete();
+
+        return redirect()->route('admin.users.index')
+            ->with('success', 'Utilisateur supprimé avec succès.');
+    }
+
+    /**
      * Affiche la liste des places
      */
     public function placesList()
@@ -174,6 +210,31 @@ class AdminController extends Controller
     }
 
     /**
+     * Supprime une place de parking
+     */
+    public function deletePlace(Place $place)
+    {
+        // Vérifier si la place est occupée ou a des réservations
+        if ($place->statut === 'occupée') {
+            return redirect()->route('admin.places.index')
+                ->with('error', 'Impossible de supprimer une place occupée. Veuillez d\'abord libérer la place.');
+        }
+
+        // Vérifier s'il y a des réservations actives pour cette place
+        $activeReservations = $place->reservations()->where('statut', 'active')->count();
+        if ($activeReservations > 0) {
+            return redirect()->route('admin.places.index')
+                ->with('error', 'Impossible de supprimer une place avec des réservations actives.');
+        }
+
+        // Supprimer la place
+        $place->delete();
+
+        return redirect()->route('admin.places.index')
+            ->with('success', 'Place supprimée avec succès.');
+    }
+
+    /**
      * Affiche la liste d'attente
      */
     public function waitingList()
@@ -224,6 +285,24 @@ class AdminController extends Controller
 
         return redirect()->route('admin.waiting-list')
             ->with('success', 'Position mise à jour avec succès.');
+    }
+
+    /**
+     * Supprime un utilisateur de la liste d'attente
+     */
+    public function deleteFromWaitingList(WaitingList $waitingList)
+    {
+        $userName = $waitingList->user->name;
+        $position = $waitingList->position;
+        
+        // Supprimer l'entrée
+        $waitingList->delete();
+        
+        // Réajuster les positions des autres utilisateurs
+        WaitingList::where('position', '>', $position)->decrement('position');
+        
+        return redirect()->route('admin.waiting-list')
+            ->with('success', "L'utilisateur {$userName} a été retiré de la liste d'attente.");
     }
 
     /**
@@ -292,5 +371,57 @@ class AdminController extends Controller
             ->paginate(10);
             
         return view('admin.reservations.history', compact('reservations'));
+    }
+
+    /**
+     * Affiche la page des paramètres
+     */
+    public function settings()
+    {
+        $reservationDuration = Setting::getValue('reservation_duration', 30);
+        return view('admin.settings', compact('reservationDuration'));
+    }
+
+    /**
+     * Met à jour les paramètres
+     */
+    public function updateSettings(Request $request)
+    {
+        $request->validate([
+            'reservation_duration' => ['required', 'integer', 'min:1'],
+        ]);
+
+        Setting::setValue('reservation_duration', $request->reservation_duration);
+
+        return redirect()->route('admin.settings')
+            ->with('success', 'Paramètres mis à jour avec succès.');
+    }
+
+    /**
+     * Ferme une réservation active
+     */
+    public function closeReservation(Reservation $reservation)
+    {
+        // Vérifier si la réservation est active
+        if ($reservation->statut !== 'active') {
+            return redirect()->route('admin.reservations.history')
+                ->with('error', 'Cette réservation n\'est pas active.');
+        }
+
+        // Mettre à jour la réservation
+        $reservation->update([
+            'statut' => 'terminée',
+            'date_fin' => now(),
+        ]);
+
+        // Libérer la place
+        $place = $reservation->place;
+        $place->update([
+            'statut' => 'disponible',
+            'user_id' => null,
+        ]);
+
+        return redirect()->route('admin.reservations.history')
+            ->with('success', 'La réservation a été fermée avec succès.');
     }
 }

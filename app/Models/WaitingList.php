@@ -25,6 +25,7 @@ class WaitingList extends Model
         'user_id',
         'position',
         'date_demande',
+        'place_id',
     ];
 
     /**
@@ -42,5 +43,13 @@ class WaitingList extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Relation avec la place demandée
+     */
+    public function place()
+    {
+        return $this->belongsTo(Place::class);
     }
 }

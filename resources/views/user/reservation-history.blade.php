@@ -36,9 +36,9 @@
                                     <td>{{ $reservation->date_fin ? $reservation->date_fin->format('d/m/Y') : 'En cours' }}</td>
                                     <td>
                                         @if($reservation->date_fin)
-                                            {{ $reservation->date_debut->diffInDays($reservation->date_fin) }} jours
+                                            {{ \App\Helpers\DateHelper::formatDuration($reservation->date_debut, $reservation->date_fin) }}
                                         @else
-                                            {{ $reservation->date_debut->diffInDays(now()) }} jours (en cours)
+                                            {{ \App\Helpers\DateHelper::formatDuration($reservation->date_debut) }} (en cours)
                                         @endif
                                     </td>
                                     <td>

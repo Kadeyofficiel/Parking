@@ -130,6 +130,11 @@
                                     <i class="fas fa-history"></i> Historique
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('admin.settings') ? 'active' : '' }}" href="{{ route('admin.settings') }}">
+                                    <i class="fas fa-cog"></i> Paramètres
+                                </a>
+                            </li>
                         @else
                             <!-- Menu Utilisateur -->
                             <li class="nav-item">

@@ -46,6 +46,12 @@
                                 Connexion
                             </button>
                         </div>
+                        
+                        <div class="mt-3 text-center">
+                            <a href="{{ route('password.request') }}" class="text-decoration-none">
+                                Mot de passe oublié ?
+                            </a>
+                        </div>
                     </form>
                 </div>
             </div>

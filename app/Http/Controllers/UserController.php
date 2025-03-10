@@ -35,7 +35,13 @@ class UserController extends Controller
      */
     public function showReservationForm()
     {
-        return view('user.reservation-form');
+        // Récupérer toutes les places de parking
+        $places = Place::orderBy('numero')->get();
+        
+        // Calculer le temps d'attente estimé (position dans la file d'attente)
+        $waitingCount = WaitingList::count();
+        
+        return view('user.reservation-form', compact('places', 'waitingCount'));
     }
 
     /**
@@ -57,17 +63,45 @@ class UserController extends Controller
                 ->with('error', 'Vous êtes déjà sur la liste d\'attente.');
         }
         
-        // Ajouter l'utilisateur à la liste d'attente
-        $lastPosition = WaitingList::max('position') ?? 0;
-        
-        WaitingList::create([
-            'user_id' => $user->id,
-            'position' => $lastPosition + 1,
-            'date_demande' => now(),
+        // Valider la demande
+        $request->validate([
+            'place_id' => 'required|exists:places,id',
         ]);
         
-        return redirect()->route('dashboard')
-            ->with('success', 'Votre demande de réservation a été enregistrée. Vous êtes maintenant sur la liste d\'attente.');
+        $place = Place::findOrFail($request->place_id);
+        
+        // Si la place est disponible, l'attribuer directement à l'utilisateur
+        if ($place->isAvailable()) {
+            // Mettre à jour le statut de la place
+            $place->update([
+                'statut' => 'occupée',
+                'user_id' => $user->id,
+            ]);
+            
+            // Créer une nouvelle réservation
+            Reservation::create([
+                'user_id' => $user->id,
+                'place_id' => $place->id,
+                'date_debut' => now(),
+                'statut' => 'active',
+            ]);
+            
+            return redirect()->route('dashboard')
+                ->with('success', 'La place de parking n°' . $place->numero . ' vous a été attribuée avec succès.');
+        } else {
+            // Ajouter l'utilisateur à la liste d'attente pour cette place spécifique
+            $lastPosition = WaitingList::max('position') ?? 0;
+            
+            WaitingList::create([
+                'user_id' => $user->id,
+                'position' => $lastPosition + 1,
+                'date_demande' => now(),
+                'place_id' => $place->id, // Stocker la place demandée
+            ]);
+            
+            return redirect()->route('dashboard')
+                ->with('success', 'Votre demande pour la place n°' . $place->numero . ' a été enregistrée. Vous êtes maintenant sur la liste d\'attente.');
+        }
     }
 
     /**
@@ -80,5 +114,39 @@ class UserController extends Controller
             ->paginate(10);
             
         return view('user.reservation-history', compact('reservations'));
+    }
+
+    /**
+     * Ferme une réservation active
+     */
+    public function closeReservation(Reservation $reservation)
+    {
+        // Vérifier si la réservation appartient à l'utilisateur
+        if ($reservation->user_id !== Auth::id()) {
+            return redirect()->route('dashboard')
+                ->with('error', 'Vous n\'êtes pas autorisé à fermer cette réservation.');
+        }
+
+        // Vérifier si la réservation est active
+        if ($reservation->statut !== 'active') {
+            return redirect()->route('dashboard')
+                ->with('error', 'Cette réservation n\'est pas active.');
+        }
+
+        // Mettre à jour la réservation
+        $reservation->update([
+            'statut' => 'terminée',
+            'date_fin' => now(),
+        ]);
+
+        // Libérer la place
+        $place = $reservation->place;
+        $place->update([
+            'statut' => 'disponible',
+            'user_id' => null,
+        ]);
+
+        return redirect()->route('dashboard')
+            ->with('success', 'Votre réservation a été fermée avec succès.');
     }
 }

@@ -39,14 +39,20 @@
                                 <td>{{ $reservation->date_fin ? $reservation->date_fin->format('d/m/Y') : 'En cours' }}</td>
                                 <td>
                                     @if($reservation->date_fin)
-                                        {{ $reservation->date_debut->diffInDays($reservation->date_fin) }} jours
+                                        {{ \App\Helpers\DateHelper::formatDuration($reservation->date_debut, $reservation->date_fin) }}
                                     @else
-                                        {{ $reservation->date_debut->diffInDays(now()) }} jours (en cours)
+                                        {{ \App\Helpers\DateHelper::formatDuration($reservation->date_debut) }} (en cours)
                                     @endif
                                 </td>
                                 <td>
                                     @if($reservation->statut == 'active')
                                         <span class="badge bg-success">Active</span>
+                                        <form action="{{ route('admin.reservations.close', $reservation) }}" method="POST" class="d-inline mt-2">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir fermer cette réservation ?')">
+                                                <i class="fas fa-times-circle"></i> Fermer
+                                            </button>
+                                        </form>
                                     @elseif($reservation->statut == 'terminée')
                                         <span class="badge bg-secondary">Terminée</span>
                                     @else

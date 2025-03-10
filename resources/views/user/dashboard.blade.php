@@ -15,8 +15,19 @@
                 <div class="card-body">
                     @if($currentPlace)
                         <div class="alert alert-success">
-                            <h4 class="alert-heading"><i class="fas fa-check-circle me-2"></i>Place attribuée</h4>
-                            <p>Vous avez actuellement la place <strong>{{ $currentPlace->numero }}</strong>.</p>
+                            <h5><i class="fas fa-check-circle me-2"></i>Vous avez une place attribuée</h5>
+                            <p class="mb-0">Place numéro: <strong>{{ $currentPlace->numero }}</strong></p>
+                            
+                            @if($reservations->where('statut', 'active')->first())
+                                <div class="mt-3">
+                                    <form action="{{ route('reservation.close', $reservations->where('statut', 'active')->first()) }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir libérer cette place ? Cette action est irréversible.')">
+                                            <i class="fas fa-times-circle me-2"></i>Libérer cette place
+                                        </button>
+                                    </form>
+                                </div>
+                            @endif
                         </div>
                     @else
                         <div class="alert alert-warning">
