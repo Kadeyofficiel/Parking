@@ -149,4 +149,83 @@ class UserController extends Controller
         return redirect()->route('dashboard')
             ->with('success', 'Votre réservation a été fermée avec succès.');
     }
+
+    /**
+     * Affiche le profil de l'utilisateur
+     */
+    public function profile()
+    {
+        $user = Auth::user();
+        return view('user.profile', compact('user'));
+    }
+
+    /**
+     * Met à jour le profil de l'utilisateur
+     */
+    public function updateProfile(Request $request)
+    {
+        $user = Auth::user();
+        
+        $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
+        ]);
+        
+        $user->update([
+            'name' => $request->name,
+            'email' => $request->email,
+        ]);
+        
+        return redirect()->route('user.profile')
+            ->with('success', 'Votre profil a été mis à jour avec succès.');
+    }
+
+    /**
+     * Affiche les notifications de l'utilisateur
+     */
+    public function notifications()
+    {
+        // Ici, vous pourriez implémenter un système de notifications réel
+        // Pour l'instant, nous allons simuler des notifications
+        $notifications = [
+            [
+                'id' => 1,
+                'type' => 'info',
+                'title' => 'Bienvenue sur SmartParking',
+                'message' => 'Merci d\'utiliser notre application de gestion de parking.',
+                'date' => now()->subDays(1),
+                'read' => false
+            ],
+            [
+                'id' => 2,
+                'type' => 'warning',
+                'title' => 'Rappel de renouvellement',
+                'message' => 'N\'oubliez pas de renouveler votre demande de place si nécessaire.',
+                'date' => now()->subDays(2),
+                'read' => false
+            ],
+            [
+                'id' => 3,
+                'type' => 'success',
+                'title' => 'Nouvelle fonctionnalité',
+                'message' => 'Découvrez les nouvelles statistiques disponibles sur votre tableau de bord.',
+                'date' => now()->subDays(3),
+                'read' => true
+            ],
+        ];
+        
+        return view('user.notifications', ['notifications' => collect($notifications)]);
+    }
+
+    /**
+     * Marque les notifications comme lues
+     */
+    public function markNotificationsAsRead(Request $request)
+    {
+        // Ici, vous implémenteriez la logique pour marquer les notifications comme lues
+        // Pour l'instant, nous simulons simplement une réponse réussie
+        
+        return redirect()->route('user.notifications')
+            ->with('success', 'Toutes les notifications ont été marquées comme lues.');
+    }
 }

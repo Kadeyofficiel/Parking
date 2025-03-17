@@ -424,4 +424,107 @@ class AdminController extends Controller
         return redirect()->route('admin.reservations.history')
             ->with('success', 'La réservation a été fermée avec succès.');
     }
+
+    /**
+     * Affiche les statistiques détaillées
+     */
+    public function statistics()
+    {
+        // Statistiques des utilisateurs
+        $totalUsers = User::count();
+        $newUsersThisMonth = User::whereMonth('created_at', now()->month)->count();
+        $newUsersLastMonth = User::whereMonth('created_at', now()->subMonth()->month)->count();
+        $userGrowth = $newUsersLastMonth > 0 ? (($newUsersThisMonth - $newUsersLastMonth) / $newUsersLastMonth) * 100 : 100;
+        
+        // Statistiques des places
+        $totalPlaces = Place::count();
+        $occupiedPlaces = Place::where('statut', 'occupée')->count();
+        $availablePlaces = Place::where('statut', 'disponible')->count();
+        $occupancyRate = $totalPlaces > 0 ? ($occupiedPlaces / $totalPlaces) * 100 : 0;
+        
+        // Statistiques des réservations
+        $totalReservations = Reservation::count();
+        $activeReservations = Reservation::where('statut', 'active')->count();
+        $completedReservations = Reservation::where('statut', 'terminée')->count();
+        $averageDuration = Reservation::where('statut', 'terminée')
+            ->whereNotNull('date_fin')
+            ->get()
+            ->avg(function ($reservation) {
+                return $reservation->date_debut->diffInDays($reservation->date_fin);
+            }) ?? 0;
+        
+        // Statistiques de la liste d'attente
+        $waitingListCount = WaitingList::count();
+        $averageWaitTime = 0;
+        if ($waitingListCount > 0) {
+            $averageWaitTime = WaitingList::avg('position') * 2; // Estimation: 2 jours par position
+        }
+        
+        // Données pour les graphiques
+        $monthlyData = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $month = now()->subMonths($i);
+            $monthlyData[] = [
+                'month' => $month->format('M'),
+                'reservations' => Reservation::whereMonth('created_at', $month->month)
+                    ->whereYear('created_at', $month->year)
+                    ->count(),
+                'completions' => Reservation::where('statut', 'terminée')
+                    ->whereMonth('date_fin', $month->month)
+                    ->whereYear('date_fin', $month->year)
+                    ->count(),
+            ];
+        }
+        
+        // Données pour le graphique de répartition des durées
+        $durationDistribution = [
+            '1-7' => Reservation::where('statut', 'terminée')
+                ->whereNotNull('date_fin')
+                ->get()
+                ->filter(function ($reservation) {
+                    $days = $reservation->date_debut->diffInDays($reservation->date_fin);
+                    return $days >= 1 && $days <= 7;
+                })->count(),
+            '8-14' => Reservation::where('statut', 'terminée')
+                ->whereNotNull('date_fin')
+                ->get()
+                ->filter(function ($reservation) {
+                    $days = $reservation->date_debut->diffInDays($reservation->date_fin);
+                    return $days >= 8 && $days <= 14;
+                })->count(),
+            '15-30' => Reservation::where('statut', 'terminée')
+                ->whereNotNull('date_fin')
+                ->get()
+                ->filter(function ($reservation) {
+                    $days = $reservation->date_debut->diffInDays($reservation->date_fin);
+                    return $days >= 15 && $days <= 30;
+                })->count(),
+            '30+' => Reservation::where('statut', 'terminée')
+                ->whereNotNull('date_fin')
+                ->get()
+                ->filter(function ($reservation) {
+                    $days = $reservation->date_debut->diffInDays($reservation->date_fin);
+                    return $days > 30;
+                })->count(),
+        ];
+        
+        return view('admin.statistics', compact(
+            'totalUsers', 
+            'newUsersThisMonth', 
+            'newUsersLastMonth', 
+            'userGrowth',
+            'totalPlaces', 
+            'occupiedPlaces', 
+            'availablePlaces', 
+            'occupancyRate',
+            'totalReservations', 
+            'activeReservations', 
+            'completedReservations', 
+            'averageDuration',
+            'waitingListCount', 
+            'averageWaitTime',
+            'monthlyData',
+            'durationDistribution'
+        ));
+    }
 }
