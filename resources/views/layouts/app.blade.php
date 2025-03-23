@@ -10,8 +10,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --primary-color: #4361ee;
@@ -227,9 +225,9 @@
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container">
+        <div class="container-fluid">
             <a class="navbar-brand" href="{{ route('dashboard') }}">
-                <i class="fas fa-parking me-2"></i>SmartParking
+                <i class="fas fa-parking me-2"></i>Gestion de Parking
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -239,13 +237,13 @@
                     @guest
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('login') }}">
-                                <i class="fas fa-sign-in-alt me-1"></i> Connexion
+                                <i class="fas fa-sign-in-alt me-1"></i>Connexion
                             </a>
                         </li>
                     @else
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-user-circle me-1"></i> {{ Auth::user()->name }}
+                                <i class="fas fa-user-circle me-1"></i>{{ Auth::user()->name }}
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                                 <li>
@@ -255,7 +253,7 @@
                                 </li>
                                 <li>
                                     <a class="dropdown-item" href="{{ route('password.change') }}">
-                                        <i class="fas fa-key me-2"></i>Changer le mot de passe
+                                        <i class="fas fa-key me-2"></i>Changer mot de passe
                                     </a>
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
@@ -279,72 +277,61 @@
         <div class="row">
             @auth
                 <div class="col-md-3 col-lg-2 d-md-block sidebar collapse">
-                    <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
-                        <ul class="nav flex-column w-100">
+                    <div class="position-sticky pt-3">
+                        <ul class="nav flex-column">
                             <li class="nav-item">
                                 <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
-                                    <i class="fas fa-tachometer-alt"></i> Tableau de bord
+                                    <i class="fas fa-tachometer-alt"></i>
+                                    Tableau de bord
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('reservation.form') ? 'active' : '' }}" href="{{ route('reservation.form') }}">
+                                    <i class="fas fa-plus-circle"></i>
+                                    Nouvelle réservation
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('reservation.history') ? 'active' : '' }}" href="{{ route('reservation.history') }}">
+                                    <i class="fas fa-history"></i>
+                                    Historique
                                 </a>
                             </li>
                             
                             @if(Auth::user()->isAdmin())
-                                <!-- Menu Admin -->
-                                <li class="nav-item mt-3">
-                                    <span class="text-muted small text-uppercase px-3">Administration</span>
+                                <li class="nav-item mt-4">
+                                    <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mb-1 text-muted">
+                                        <span>Administration</span>
+                                    </h6>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
+                                        <i class="fas fa-user-shield"></i>
+                                        Admin Dashboard
+                                    </a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" href="{{ route('admin.users.index') }}">
-                                        <i class="fas fa-users"></i> Utilisateurs
+                                        <i class="fas fa-users"></i>
+                                        Utilisateurs
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link {{ request()->routeIs('admin.places.*') ? 'active' : '' }}" href="{{ route('admin.places.index') }}">
-                                        <i class="fas fa-parking"></i> Places
+                                        <i class="fas fa-parking"></i>
+                                        Places
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link {{ request()->routeIs('admin.waiting-list') ? 'active' : '' }}" href="{{ route('admin.waiting-list') }}">
-                                        <i class="fas fa-list"></i> Liste d'attente
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {{ request()->routeIs('admin.reservations.history') ? 'active' : '' }}" href="{{ route('admin.reservations.history') }}">
-                                        <i class="fas fa-history"></i> Historique
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {{ request()->routeIs('admin.statistics') ? 'active' : '' }}" href="{{ route('admin.statistics') }}">
-                                        <i class="fas fa-chart-bar"></i> Statistiques
+                                        <i class="fas fa-list"></i>
+                                        Liste d'attente
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link {{ request()->routeIs('admin.settings') ? 'active' : '' }}" href="{{ route('admin.settings') }}">
-                                        <i class="fas fa-cog"></i> Paramètres
-                                    </a>
-                                </li>
-                            @else
-                                <!-- Menu Utilisateur -->
-                                <li class="nav-item mt-3">
-                                    <span class="text-muted small text-uppercase px-3">Gestion</span>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {{ request()->routeIs('reservation.form') ? 'active' : '' }}" href="{{ route('reservation.form') }}">
-                                        <i class="fas fa-plus-circle"></i> Demande de place
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {{ request()->routeIs('reservation.history') ? 'active' : '' }}" href="{{ route('reservation.history') }}">
-                                        <i class="fas fa-history"></i> Historique
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {{ request()->routeIs('user.profile') ? 'active' : '' }}" href="{{ route('user.profile') }}">
-                                        <i class="fas fa-user"></i> Mon profil
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {{ request()->routeIs('user.notifications') ? 'active' : '' }}" href="{{ route('user.notifications') }}">
-                                        <i class="fas fa-bell"></i> Notifications
+                                        <i class="fas fa-cog"></i>
+                                        Paramètres
                                     </a>
                                 </li>
                             @endif
@@ -353,19 +340,19 @@
                 </div>
                 <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
             @else
-                <main class="col-12 px-4 py-4">
+                <main class="col-12 py-4">
             @endauth
                 
                 @if(session('success'))
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
+                        {{ session('success') }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 @endif
 
                 @if(session('error'))
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <i class="fas fa-exclamation-circle me-2"></i> {{ session('error') }}
+                        {{ session('error') }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 @endif
@@ -373,7 +360,7 @@
                 @yield('content')
                 
                 <footer class="bg-white p-3 mt-5 rounded shadow-sm text-center">
-                    <p class="mb-0 text-muted">© {{ date('Y') }} SmartParking - Tous droits réservés</p>
+                    <p class="mb-0 text-muted">© {{ date('Y') }} Gestion de Parking - Tous droits réservés</p>
                 </footer>
             </main>
         </div>
@@ -381,34 +368,6 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Custom JS -->
-    <script>
-        // Add loading animation
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add loading animation to buttons
-            const buttons = document.querySelectorAll('button:not(.btn-close):not(.navbar-toggler)');
-            buttons.forEach(button => {
-                button.addEventListener('click', function() {
-                    if (!this.classList.contains('no-loading') && !this.closest('form.no-loading')) {
-                        const originalContent = this.innerHTML;
-                        this.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Chargement...';
-                        this.disabled = true;
-                        
-                        setTimeout(() => {
-                            this.innerHTML = originalContent;
-                            this.disabled = false;
-                        }, 10000); // Timeout after 10 seconds in case the page doesn't reload
-                    }
-                });
-            });
-            
-            // Initialize tooltips
-            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            tooltipTriggerList.map(function (tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl);
-            });
-        });
-    </script>
     @yield('scripts')
 </body>
 </html> 

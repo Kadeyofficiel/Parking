@@ -16,18 +16,28 @@ class UserController extends Controller
     public function dashboard()
     {
         $user = Auth::user();
-        $currentPlace = Place::where('user_id', $user->id)->first();
+        
+        // Récupérer la place attribuée à l'utilisateur
+        $currentPlace = Place::where('user_id', $user->id)
+            ->where('statut', 'occupée')
+            ->first();
+        
+        // Récupérer les réservations de l'utilisateur
         $reservations = Reservation::where('user_id', $user->id)
+            ->with('place') // Chargement eager de la relation place
             ->orderBy('created_at', 'desc')
             ->get();
-        $waitingList = WaitingList::where('user_id', $user->id)->first();
         
-        $position = null;
-        if ($waitingList) {
-            $position = $waitingList->position;
-        }
+        // Récupérer la position sur la liste d'attente
+        $waitingList = WaitingList::where('user_id', $user->id)->first();
+        $position = $waitingList ? $waitingList->position : null;
 
-        return view('user.dashboard', compact('user', 'currentPlace', 'reservations', 'position'));
+        return view('user.dashboard', [
+            'user' => $user,
+            'currentPlace' => $currentPlace,
+            'reservations' => $reservations,
+            'position' => $position
+        ]);
     }
 
     /**
@@ -141,13 +151,15 @@ class UserController extends Controller
 
         // Libérer la place
         $place = $reservation->place;
-        $place->update([
-            'statut' => 'disponible',
-            'user_id' => null,
-        ]);
+        if ($place) {
+            $place->update([
+                'statut' => 'disponible',
+                'user_id' => null,
+            ]);
+        }
 
         return redirect()->route('dashboard')
-            ->with('success', 'Votre réservation a été fermée avec succès.');
+            ->with('success', 'Votre réservation a été fermée avec succès et la place a été libérée.');
     }
 
     /**

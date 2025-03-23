@@ -1,187 +1,66 @@
 @extends('layouts.app')
 
-@section('title', 'Administration')
+@section('title', 'Tableau de bord')
 
 @section('content')
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h2 mb-0">Tableau de bord administrateur</h1>
+        <h1 class="h2 mb-0">Tableau de bord utilisateur</h1>
         <div>
-            <button class="btn btn-sm btn-outline-secondary me-2" id="refreshStats">
-                <i class="fas fa-sync-alt me-1"></i> Actualiser
-            </button>
-            <a href="{{ route('admin.settings') }}" class="btn btn-sm btn-primary">
-                <i class="fas fa-cog me-1"></i> Paramètres
+            <a href="{{ route('reservation.form') }}" class="btn btn-sm btn-primary">
+                <i class="fas fa-plus me-1"></i> Nouvelle réservation
             </a>
         </div>
     </div>
     
     <div class="row">
-        <div class="col-md-3">
-            <div class="card stat-card text-white bg-primary mb-4">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-uppercase mb-1 opacity-75">Utilisateurs</h6>
-                            <h2 class="mb-0">{{ $totalUsers }}</h2>
-                        </div>
-                        <div class="icon">
-                            <i class="fas fa-users"></i>
-                        </div>
-                    </div>
-                    <div class="progress mt-3" style="height: 5px;">
-                        <div class="progress-bar bg-white" role="progressbar" style="width: 100%"></div>
-                    </div>
-                </div>
-                <div class="card-footer d-flex align-items-center justify-content-between">
-                    <a href="{{ route('admin.users.index') }}" class="text-white text-decoration-none">Voir les détails</a>
-                    <i class="fas fa-angle-right"></i>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3">
-            <div class="card stat-card text-white bg-success mb-4">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-uppercase mb-1 opacity-75">Places totales</h6>
-                            <h2 class="mb-0">{{ $totalPlaces }}</h2>
-                        </div>
-                        <div class="icon">
-                            <i class="fas fa-parking"></i>
-                        </div>
-                    </div>
-                    <div class="progress mt-3" style="height: 5px;">
-                        <div class="progress-bar bg-white" role="progressbar" style="width: 100%"></div>
-                    </div>
-                </div>
-                <div class="card-footer d-flex align-items-center justify-content-between">
-                    <a href="{{ route('admin.places.index') }}" class="text-white text-decoration-none">Voir les détails</a>
-                    <i class="fas fa-angle-right"></i>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3">
-            <div class="card stat-card text-white bg-info mb-4">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-uppercase mb-1 opacity-75">Places disponibles</h6>
-                            <h2 class="mb-0">{{ $availablePlaces }}</h2>
-                        </div>
-                        <div class="icon">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                    </div>
-                    <div class="progress mt-3" style="height: 5px;">
-                        <div class="progress-bar bg-white" role="progressbar" style="width: {{ $totalPlaces > 0 ? ($availablePlaces / $totalPlaces) * 100 : 0 }}%"></div>
-                    </div>
-                </div>
-                <div class="card-footer d-flex align-items-center justify-content-between">
-                    <a href="{{ route('admin.places.index') }}" class="text-white text-decoration-none">Voir les détails</a>
-                    <i class="fas fa-angle-right"></i>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3">
-            <div class="card stat-card text-white bg-warning mb-4">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-uppercase mb-1 opacity-75">Liste d'attente</h6>
-                            <h2 class="mb-0">{{ $waitingListCount }}</h2>
-                        </div>
-                        <div class="icon">
-                            <i class="fas fa-list"></i>
-                        </div>
-                    </div>
-                    <div class="progress mt-3" style="height: 5px;">
-                        <div class="progress-bar bg-white" role="progressbar" style="width: 100%"></div>
-                    </div>
-                </div>
-                <div class="card-footer d-flex align-items-center justify-content-between">
-                    <a href="{{ route('admin.waiting-list') }}" class="text-white text-decoration-none">Voir les détails</a>
-                    <i class="fas fa-angle-right"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card mb-4">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Statistiques d'occupation</h5>
-                    <div class="dropdown">
-                        <button class="btn btn-sm btn-outline-light dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-calendar me-1"></i> Période
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
-                            <li><a class="dropdown-item" href="#" data-period="week">Cette semaine</a></li>
-                            <li><a class="dropdown-item" href="#" data-period="month">Ce mois</a></li>
-                            <li><a class="dropdown-item" href="#" data-period="year">Cette année</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <canvas id="occupationChart" height="300"></canvas>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0">Répartition des places</h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="placesChart" height="260"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="row">
         <div class="col-md-6">
             <div class="card mb-4">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Actions rapides</h5>
-                    <span class="badge bg-primary">{{ now()->format('d/m/Y') }}</span>
+                <div class="card-header">
+                    <h5 class="mb-0">Ma place actuelle</h5>
                 </div>
                 <div class="card-body">
-                    <div class="list-group">
-                        <a href="{{ route('admin.users.create') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                            <div>
-                                <i class="fas fa-user-plus me-2 text-primary"></i>
-                                <span>Ajouter un utilisateur</span>
+                    @if($currentPlace)
+                        <div class="d-flex align-items-center">
+                            <div class="bg-primary rounded-circle p-3 me-3 text-white">
+                                <i class="fas fa-parking fa-2x"></i>
                             </div>
-                            <i class="fas fa-chevron-right text-muted"></i>
-                        </a>
-                        <a href="{{ route('admin.places.create') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
                             <div>
-                                <i class="fas fa-plus-circle me-2 text-success"></i>
-                                <span>Ajouter une place</span>
+                                <h4 class="mb-1">Place n° {{ $currentPlace->numero }}</h4>
+                                <p class="text-muted mb-0">Attribuée depuis le {{ now()->format('d/m/Y') }}</p>
                             </div>
-                            <i class="fas fa-chevron-right text-muted"></i>
-                        </a>
-                        <a href="{{ route('admin.waiting-list') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                            <div>
-                                <i class="fas fa-list me-2 text-warning"></i>
-                                <span>Gérer la liste d'attente</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Statut: <span class="badge bg-success">Occupée</span></span>
+                            @if($reservations && $reservations->where('statut', 'active')->first())
+                                <form action="{{ route('reservation.close', $reservations->where('statut', 'active')->first()->id) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir libérer cette place?')">
+                                    @csrf
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        <i class="fas fa-sign-out-alt me-1"></i> Libérer ma place
+                                    </button>
+                                </form>
+                            @else
+                                <form action="{{ route('reservation.close', ['reservation' => $currentPlace->reservations()->where('statut', 'active')->first()->id ?? 0]) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir libérer cette place?')">
+                                    @csrf
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        <i class="fas fa-sign-out-alt me-1"></i> Libérer ma place
+                                    </button>
+                                </form>
+                            @endif
+                        </div>
+                    @else
+                        <div class="text-center py-4">
+                            <div class="mb-3">
+                                <i class="fas fa-car-side fa-4x text-muted"></i>
                             </div>
-                            <span class="badge bg-warning rounded-pill">{{ $waitingListCount }}</span>
-                        </a>
-                        <a href="{{ route('admin.reservations.history') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                            <div>
-                                <i class="fas fa-history me-2 text-info"></i>
-                                <span>Consulter l'historique</span>
-                            </div>
-                            <i class="fas fa-chevron-right text-muted"></i>
-                        </a>
-                    </div>
+                            <h5>Vous n'avez pas de place attribuée</h5>
+                            <p class="text-muted">Faites une demande de réservation pour obtenir une place de parking.</p>
+                            <a href="{{ route('reservation.form') }}" class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i> Demander une place
+                            </a>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -189,210 +68,101 @@
         <div class="col-md-6">
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5 class="mb-0">Activité récente</h5>
+                    <h5 class="mb-0">Liste d'attente</h5>
                 </div>
-                <div class="card-body p-0">
-                    <div class="list-group list-group-flush">
-                        @for ($i = 0; $i < 5; $i++)
-                            <div class="list-group-item">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <h6 class="mb-1">
-                                        @if($i % 3 == 0)
-                                            <i class="fas fa-user-plus text-success me-2"></i> Nouvel utilisateur inscrit
-                                        @elseif($i % 3 == 1)
-                                            <i class="fas fa-parking text-primary me-2"></i> Place attribuée
-                                        @else
-                                            <i class="fas fa-sign-out-alt text-warning me-2"></i> Place libérée
-                                        @endif
-                                    </h6>
-                                    <small class="text-muted">{{ now()->subHours($i * 2)->format('H:i') }}</small>
+                <div class="card-body">
+                    @if($position)
+                        <div class="text-center py-4">
+                            <div class="position-relative mb-4">
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ (1 / $position) * 100 }}%" aria-valuenow="{{ $position }}" aria-valuemin="0" aria-valuemax="10"></div>
                                 </div>
-                                <p class="mb-1">
-                                    @if($i % 3 == 0)
-                                        Un nouvel utilisateur s'est inscrit sur la plateforme.
-                                    @elseif($i % 3 == 1)
-                                        La place n°{{ rand(1, 20) }} a été attribuée à un utilisateur.
-                                    @else
-                                        La place n°{{ rand(1, 20) }} a été libérée.
-                                    @endif
-                                </p>
                             </div>
-                        @endfor
-                    </div>
-                </div>
-                <div class="card-footer text-center">
-                    <a href="{{ route('admin.reservations.history') }}" class="btn btn-sm btn-outline-primary">Voir toutes les activités</a>
+                            <h3 class="mb-3">Position: <span class="text-primary">{{ $position }}</span></h3>
+                            <p class="text-muted">Vous êtes actuellement sur la liste d'attente. Vous serez notifié lorsqu'une place sera disponible.</p>
+                        </div>
+                    @else
+                        <div class="text-center py-4">
+                            <div class="mb-3">
+                                <i class="fas fa-clipboard-list fa-4x text-muted"></i>
+                            </div>
+                            <h5>Vous n'êtes pas sur la liste d'attente</h5>
+                            <p class="text-muted">Si toutes les places sont occupées, vous pouvez vous inscrire sur la liste d'attente.</p>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
     
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-12">
             <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0">Informations système</h5>
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Mes réservations récentes</h5>
+                    <a href="{{ route('reservation.history') }}" class="btn btn-sm btn-outline-primary">
+                        Voir tout l'historique
+                    </a>
                 </div>
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3">
-                            <div class="border-start border-4 border-primary ps-3 mb-3">
-                                <p class="text-muted mb-1">Version de l'application</p>
-                                <h5 class="mb-0">2.0.0</h5>
-                            </div>
+                    @if(isset($reservations) && $reservations->count() > 0)
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>N° Place</th>
+                                        <th>Date de début</th>
+                                        <th>Date de fin</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($reservations->take(5) as $reservation)
+                                        <tr>
+                                            <td>{{ $reservation->place->numero ?? 'N/A' }}</td>
+                                            <td>{{ $reservation->date_debut ? $reservation->date_debut->format('d/m/Y H:i') : 'N/A' }}</td>
+                                            <td>{{ $reservation->date_fin ? $reservation->date_fin->format('d/m/Y H:i') : 'En cours' }}</td>
+                                            <td>
+                                                @if($reservation->statut == 'active')
+                                                    <span class="badge bg-success">Active</span>
+                                                @elseif($reservation->statut == 'terminée')
+                                                    <span class="badge bg-secondary">Terminée</span>
+                                                @else
+                                                    <span class="badge bg-warning">{{ $reservation->statut }}</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if($reservation->statut == 'active')
+                                                    <form action="{{ route('reservation.close', $reservation->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir libérer cette place?')">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-danger btn-sm">
+                                                            <i class="fas fa-sign-out-alt"></i> Libérer
+                                                        </button>
+                                                    </form>
+                                                @else
+                                                    <button class="btn btn-secondary btn-sm" disabled>
+                                                        <i class="fas fa-check"></i> Terminée
+                                                    </button>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
                         </div>
-                        <div class="col-md-3">
-                            <div class="border-start border-4 border-success ps-3 mb-3">
-                                <p class="text-muted mb-1">Date</p>
-                                <h5 class="mb-0">{{ now()->format('d/m/Y') }}</h5>
+                    @else
+                        <div class="text-center py-4">
+                            <div class="mb-3">
+                                <i class="fas fa-history fa-4x text-muted"></i>
                             </div>
+                            <h5>Aucune réservation</h5>
+                            <p class="text-muted">Vous n'avez pas encore effectué de réservation.</p>
                         </div>
-                        <div class="col-md-3">
-                            <div class="border-start border-4 border-info ps-3 mb-3">
-                                <p class="text-muted mb-1">Heure</p>
-                                <h5 class="mb-0">{{ now()->format('H:i') }}</h5>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="border-start border-4 border-warning ps-3 mb-3">
-                                <p class="text-muted mb-1">Administrateur connecté</p>
-                                <h5 class="mb-0">{{ Auth::user()->name }}</h5>
-                            </div>
-                        </div>
-                    </div>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
 </div>
-@endsection
-
-@section('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Chart for occupation statistics
-        const occupationCtx = document.getElementById('occupationChart').getContext('2d');
-        const occupationChart = new Chart(occupationCtx, {
-            type: 'line',
-            data: {
-                labels: ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'],
-                datasets: [{
-                    label: 'Places occupées',
-                    data: [{{ $totalPlaces - $availablePlaces }}, {{ rand($totalPlaces - $availablePlaces - 2, $totalPlaces - $availablePlaces + 2) }}, {{ rand($totalPlaces - $availablePlaces - 3, $totalPlaces - $availablePlaces + 3) }}, {{ rand($totalPlaces - $availablePlaces - 2, $totalPlaces - $availablePlaces + 2) }}, {{ rand($totalPlaces - $availablePlaces - 4, $totalPlaces - $availablePlaces + 1) }}, {{ rand($totalPlaces - $availablePlaces - 5, $totalPlaces - $availablePlaces - 2) }}, {{ rand($totalPlaces - $availablePlaces - 6, $totalPlaces - $availablePlaces - 3) }}],
-                    backgroundColor: 'rgba(67, 97, 238, 0.2)',
-                    borderColor: 'rgba(67, 97, 238, 1)',
-                    borderWidth: 2,
-                    tension: 0.3,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false,
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: {{ $totalPlaces }},
-                        ticks: {
-                            stepSize: 1
-                        }
-                    }
-                }
-            }
-        });
-        
-        // Chart for places distribution
-        const placesCtx = document.getElementById('placesChart').getContext('2d');
-        const placesChart = new Chart(placesCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Occupées', 'Disponibles', 'En maintenance'],
-                datasets: [{
-                    data: [{{ $totalPlaces - $availablePlaces }}, {{ $availablePlaces }}, {{ rand(0, 2) }}],
-                    backgroundColor: [
-                        'rgba(67, 97, 238, 0.8)',
-                        'rgba(76, 201, 240, 0.8)',
-                        'rgba(247, 37, 133, 0.8)'
-                    ],
-                    borderColor: [
-                        'rgba(67, 97, 238, 1)',
-                        'rgba(76, 201, 240, 1)',
-                        'rgba(247, 37, 133, 1)'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
-                    }
-                },
-                cutout: '70%'
-            }
-        });
-        
-        // Handle period change for occupation chart
-        document.querySelectorAll('[data-period]').forEach(item => {
-            item.addEventListener('click', event => {
-                event.preventDefault();
-                const period = event.target.getAttribute('data-period');
-                let labels, data;
-                
-                switch(period) {
-                    case 'week':
-                        labels = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
-                        data = [{{ $totalPlaces - $availablePlaces }}, {{ rand($totalPlaces - $availablePlaces - 2, $totalPlaces - $availablePlaces + 2) }}, {{ rand($totalPlaces - $availablePlaces - 3, $totalPlaces - $availablePlaces + 3) }}, {{ rand($totalPlaces - $availablePlaces - 2, $totalPlaces - $availablePlaces + 2) }}, {{ rand($totalPlaces - $availablePlaces - 4, $totalPlaces - $availablePlaces + 1) }}, {{ rand($totalPlaces - $availablePlaces - 5, $totalPlaces - $availablePlaces - 2) }}, {{ rand($totalPlaces - $availablePlaces - 6, $totalPlaces - $availablePlaces - 3) }}];
-                        break;
-                    case 'month':
-                        labels = ['Semaine 1', 'Semaine 2', 'Semaine 3', 'Semaine 4'];
-                        data = [{{ rand($totalPlaces - $availablePlaces - 2, $totalPlaces - $availablePlaces + 2) }}, {{ rand($totalPlaces - $availablePlaces - 1, $totalPlaces - $availablePlaces + 3) }}, {{ rand($totalPlaces - $availablePlaces - 3, $totalPlaces - $availablePlaces + 1) }}, {{ $totalPlaces - $availablePlaces }}];
-                        break;
-                    case 'year':
-                        labels = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
-                        data = [
-                            {{ rand($totalPlaces - $availablePlaces - 4, $totalPlaces - $availablePlaces) }}, 
-                            {{ rand($totalPlaces - $availablePlaces - 3, $totalPlaces - $availablePlaces + 1) }}, 
-                            {{ rand($totalPlaces - $availablePlaces - 2, $totalPlaces - $availablePlaces + 2) }}, 
-                            {{ rand($totalPlaces - $availablePlaces - 1, $totalPlaces - $availablePlaces + 3) }}, 
-                            {{ rand($totalPlaces - $availablePlaces - 2, $totalPlaces - $availablePlaces + 2) }}, 
-                            {{ rand($totalPlaces - $availablePlaces - 3, $totalPlaces - $availablePlaces + 1) }}, 
-                            {{ rand($totalPlaces - $availablePlaces - 4, $totalPlaces - $availablePlaces) }}, 
-                            {{ rand($totalPlaces - $availablePlaces - 5, $totalPlaces - $availablePlaces - 1) }}, 
-                            {{ rand($totalPlaces - $availablePlaces - 3, $totalPlaces - $availablePlaces + 1) }}, 
-                            {{ rand($totalPlaces - $availablePlaces - 2, $totalPlaces - $availablePlaces + 2) }}, 
-                            {{ rand($totalPlaces - $availablePlaces - 1, $totalPlaces - $availablePlaces + 3) }}, 
-                            {{ $totalPlaces - $availablePlaces }}
-                        ];
-                        break;
-                }
-                
-                occupationChart.data.labels = labels;
-                occupationChart.data.datasets[0].data = data;
-                occupationChart.update();
-            });
-        });
-        
-        // Refresh button
-        document.getElementById('refreshStats').addEventListener('click', function() {
-            this.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Actualisation...';
-            this.disabled = true;
-            
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
-        });
-    });
-</script>
 @endsection 

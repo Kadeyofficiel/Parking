@@ -17,6 +17,9 @@ class AuthController extends Controller
      */
     public function showLoginForm()
     {
+        if (Auth::check()) {
+            return redirect()->route('dashboard');
+        }
         return view('auth.login');
     }
 
@@ -25,20 +28,31 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        $credentials = $request->validate([
+        $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
 
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
+        $credentials = $request->only('email', 'password');
+        $remember = $request->filled('remember');
 
+        if (Auth::attempt($credentials, $remember)) {
+            $request->session()->regenerate();
+            
+            // Log pour le débogage
+            \Log::info('Connexion réussie pour: ' . $request->email);
+            
             return redirect()->intended('dashboard');
         }
 
-        return back()->withErrors([
-            'email' => 'Les identifiants fournis ne correspondent pas à nos enregistrements.',
-        ])->onlyInput('email');
+        // Log pour le débogage
+        \Log::warning('Échec de connexion pour: ' . $request->email);
+
+        return back()
+            ->withInput($request->only('email', 'remember'))
+            ->withErrors([
+                'email' => 'Les identifiants fournis ne correspondent pas à nos enregistrements.',
+            ]);
     }
 
     /**
@@ -51,7 +65,7 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect('/login');
     }
 
     /**
